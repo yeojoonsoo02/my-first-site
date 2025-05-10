@@ -101,7 +101,16 @@
         loadComments();
       }
     }
-
+    function timeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      if (seconds < 60) return `${seconds}초 전`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}분 전`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}시간 전`;
+      const days = Math.floor(hours / 24);
+      return `${days}일 전`;
+    }
     // 댓글 불러오기
     async function loadComments() {
       const list = document.getElementById("commentList");
@@ -109,12 +118,17 @@
 
       const querySnapshot = await getDocs(collection(db, "comments"));
       querySnapshot.forEach((doc) => {
+        const data = doc.data();
         const li = document.createElement("li");
-        li.textContent = doc.data().text;
+
+        const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
+
+        li.textContent = `${data.text} (${timeAgo(createdAt)})`;
+        li.title = createdAt.toLocaleString();
+
         list.appendChild(li);
       });
     }
-
     window.onload = () => {
       loadComments();
     };
