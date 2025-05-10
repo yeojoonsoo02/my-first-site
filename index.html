@@ -1,71 +1,127 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>준수의 웹 실험실</title>
-  </head>
-  <body>
-    <h1>안녕하세요! 👋</h1>
-    <p>이 웹사이트는 제가 GPT와 함께 배우며 만든 실험실입니다.</p>
 
-    <h2>댓글 남기기 💬</h2>
-    <input type="text" id="commentInput" placeholder="댓글을 입력해보세요" />
-    <button onclick="addComment()">댓글 추가</button>
-    <ul id="commentList"></ul>
+<head>
+  <meta charset="UTF-8" />
+  <title>준수의 웹 실험실</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 20px;
+      background-color: #f9f9f9;
+      color: #333;
+    }
 
-    <!-- Firebase SDK -->
-    <script type="module">
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
-      import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+    h1,
+    h2 {
+      color: #444;
+    }
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCnLZrxMK0P4uHZL8KxfsVAGKSKVscCKqo",
-        authDomain: "my-first-site-e9210.firebaseapp.com",
-        projectId: "my-first-site-e9210",
-        storageBucket: "my-first-site-e9210.firebasestorage.app",
-        messagingSenderId: "675684570102",
-        appId: "1:675684570102:web:1ff05925fa006eb8a9add7",
-        measurementId: "G-WP4NKWHDQ0"
-      };
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+    }
 
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const db = getFirestore(app);
+    button {
+      padding: 10px 16px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
 
-      // 댓글 추가
-      async function addComment() {
-        const input = document.getElementById("commentInput");
-        const comment = input.value.trim();
-        if (comment) {
-          await addDoc(collection(db, "comments"), {
-            text: comment,
-            createdAt: new Date()
-          });
-          input.value = "";
-          loadComments();
-        }
-      }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-      // 댓글 불러오기
-      async function loadComments() {
-        const list = document.getElementById("commentList");
-        list.innerHTML = "";
+    ul {
+      list-style: none;
+      padding: 0;
+    }
 
-        const querySnapshot = await getDocs(collection(db, "comments"));
-        querySnapshot.forEach((doc) => {
-          const li = document.createElement("li");
-          li.textContent = doc.data().text;
-          list.appendChild(li);
+    li {
+      background: #fff;
+      border: 1px solid #ddd;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>안녕하세요! 👋</h1>
+  <p>이 웹사이트는 제가 GPT와 함께 배우며 만든 실험실입니다.</p>
+
+  <h2>댓글 남기기 💬</h2>
+  <input type="text" id="commentInput" placeholder="댓글을 입력해보세요" />
+  <button onclick="addComment()">댓글 추가</button>
+  <ul id="commentList"></ul>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
+    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCnLZrxMK0P4uHZL8KxfsVAGKSKVscCKqo",
+      authDomain: "my-first-site-e9210.firebaseapp.com",
+      projectId: "my-first-site-e9210",
+      storageBucket: "my-first-site-e9210.firebasestorage.app",
+      messagingSenderId: "675684570102",
+      appId: "1:675684570102:web:1ff05925fa006eb8a9add7",
+      measurementId: "G-WP4NKWHDQ0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const db = getFirestore(app);
+
+    // 댓글 추가
+    async function addComment() {
+      const input = document.getElementById("commentInput");
+      const comment = input.value.trim();
+      if (comment) {
+        await addDoc(collection(db, "comments"), {
+          text: comment,
+          createdAt: new Date()
         });
-      }
-
-      window.onload = () => {
+        input.value = "";
         loadComments();
-      };
+      }
+    }
 
-      window.addComment = addComment;
-      window.loadComments = loadComments;
-    </script>
-  </body>
+    // 댓글 불러오기
+    async function loadComments() {
+      const list = document.getElementById("commentList");
+      list.innerHTML = "";
+
+      const querySnapshot = await getDocs(collection(db, "comments"));
+      querySnapshot.forEach((doc) => {
+        const li = document.createElement("li");
+        li.textContent = doc.data().text;
+        list.appendChild(li);
+      });
+    }
+
+    window.onload = () => {
+      loadComments();
+    };
+
+    window.addComment = addComment;
+    window.loadComments = loadComments;
+  </script>
+</body>
+
 </html>
