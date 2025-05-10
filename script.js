@@ -72,3 +72,4 @@ function toggleDarkMode() {
 
 window.addComment = addComment;
 window.loadComments = loadComments;
+window.toggleDarkMode = toggleDarkMode;
