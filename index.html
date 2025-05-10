@@ -2,10 +2,30 @@
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>준수의 첫 웹사이트</title>
+    <title>준수의 웹 실험실</title>
   </head>
   <body>
-    <h1>안녕하세요, 저는 GPT로 웹을 배우고 있어요!</h1>
-    <p>처음 만든 웹사이트입니다 🎉</p>
+    <h1>안녕하세요! 👋</h1>
+    <p>이 웹사이트는 제가 GPT와 함께 배우며 만든 실험실입니다.</p>
+    <p>영양 정보, GPT API 기능, 다양한 도구들을 이곳에 계속 추가해 나갈 거예요.</p>
+
+    <h2>댓글 남기기 💬</h2>
+    <input type="text" id="commentInput" placeholder="댓글을 입력해보세요" />
+    <button onclick="addComment()">댓글 추가</button>
+
+    <ul id="commentList"></ul>
+
+    <script>
+      function addComment() {
+        const input = document.getElementById("commentInput");
+        const comment = input.value.trim();
+        if (comment) {
+          const li = document.createElement("li");
+          li.textContent = comment;
+          document.getElementById("commentList").appendChild(li);
+          input.value = "";
+        }
+      }
+    </script>
   </body>
 </html>
