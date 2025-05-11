@@ -25,6 +25,9 @@ const foodData = [
     { name: "바나나", calories: 89, protein: 1.1, fat: 0.3, carbs: 23, unit: "1개" },
     { name: "밥", calories: 130, protein: 2.7, fat: 0.3, carbs: 28, unit: "100g" }
 ];
+const selectedFoods = [];
+
+let isSubmitting = false; // 함수 바깥에 선언 (최초 한 번만)
 
 // 방문자 카운트
 async function incrementVisitCount() {
@@ -53,15 +56,14 @@ async function updateLike(id, field) {
     });
     loadComments();
 }
-
+//댓글 삭제 함수
 async function deleteComment(id) {
     await deleteDoc(firestoreDoc(db, "comments", id));
     loadComments(); // 삭제 후 목록 다시 로드
 }
-// 댓글 추가
 
-let isSubmitting = false; // 함수 바깥에 선언 (최초 한 번만)
 
+//댓글 추가 함수
 async function addComment() {
     if (isSubmitting) return; // 이미 제출 중이면 무시
     isSubmitting = true;
@@ -113,12 +115,59 @@ function showFoodInfo(food) {
     <p>탄수화물: ${food.carbs}g</p>
 
     <input type="number" id="amountInput" placeholder="섭취량 (${food.unit})" />
-    <button onclick='calculateNutrition(${JSON.stringify(JSON.stringify(food))})'>계산하기</button>
+    <button onclick='addToList(${JSON.stringify(JSON.stringify(food))})'>추가</button>
 
     <div id="result" style="margin-top: 15px;"></div>
   `;
     document.getElementById("selectedFoodInfo").innerHTML = info;
 }
+
+function addToList(foodJson) {
+    const food = JSON.parse(JSON.parse(foodJson));
+    const amount = parseFloat(document.getElementById("amountInput").value);
+    if (isNaN(amount) || amount <= 0) {
+        alert("섭취량을 정확히 입력해주세요!");
+        return;
+    }
+
+    selectedFoods.push({ ...food, amount });
+    updateSelectedList();
+}
+
+function updateSelectedList() {
+    const list = selectedFoods.map((item) => {
+        return `<li>${item.name} - ${item.amount}${item.unit}</li>`;
+    }).join("");
+
+    document.getElementById("result").innerHTML = `
+    <h3>🥗 선택한 음식들</h3>
+    <ul>${list}</ul>
+    <button onclick="calculateTotal()">총합 계산</button>
+  `;
+}
+
+function calculateTotal() {
+    let total = { calories: 0, protein: 0, fat: 0, carbs: 0 };
+
+    selectedFoods.forEach((item) => {
+        const factor = item.unit === "100g" ? item.amount / 100 : item.amount;
+        total.calories += item.calories * factor;
+        total.protein += item.protein * factor;
+        total.fat += item.fat * factor;
+        total.carbs += item.carbs * factor;
+    });
+
+    const html = `
+    <h3>🍽 총 섭취 영양소</h3>
+    <p>칼로리: ${total.calories.toFixed(1)} kcal</p>
+    <p>단백질: ${total.protein.toFixed(1)} g</p>
+    <p>지방: ${total.fat.toFixed(1)} g</p>
+    <p>탄수화물: ${total.carbs.toFixed(1)} g</p>
+  `;
+
+    document.getElementById("result").innerHTML += html;
+}
+//영양성분 계산 함수
 
 function calculateNutrition(foodJson) {
     const food = JSON.parse(JSON.parse(foodJson));
@@ -147,7 +196,7 @@ function calculateNutrition(foodJson) {
 
     document.getElementById("result").innerHTML = resultHTML;
 }
-
+//댓글 숨기기 함수
 function toggleComments() {
     const list = document.getElementById("commentList");
     const btn = document.getElementById("toggleBtn");
@@ -160,6 +209,8 @@ function toggleComments() {
         btn.textContent = "댓글 보기";
     }
 }
+
+// 댓글 시간 함수
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     if (seconds < 60) return `${seconds}초 전`;
@@ -170,7 +221,8 @@ function timeAgo(date) {
     const days = Math.floor(hours / 24);
     return `${days}일 전`;
 }
-// 댓글 불러오기
+
+// 댓글 불러오기 함수
 async function loadComments() {
     const list = document.getElementById("commentList");
     list.innerHTML = "";
@@ -222,11 +274,7 @@ async function loadComments() {
         list.appendChild(li);
     });
 }
-window.onload = () => {
-    loadComments();
-    incrementVisitCount();
-    document.getElementById("commentList").style.display = "none";
-};
+
 document.getElementById("commentInput").addEventListener("keyup", function (event) {
     if (event.key === "Enter") {
         addComment();
@@ -237,8 +285,15 @@ function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
 }
 
+window.addToList = addToList;
 window.addComment = addComment;
 window.loadComments = loadComments;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleComments = toggleComments;
 window.calculateNutrition = calculateNutrition;
+window.calculateTotal = calculateTotal;
+window.onload = () => {
+    loadComments();
+    incrementVisitCount();
+    document.getElementById("commentList").style.display = "none";
+};
