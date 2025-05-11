@@ -19,6 +19,12 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
+const foodData = [
+    { name: "닭가슴살", calories: 165, protein: 31, fat: 3.6, carbs: 0 },
+    { name: "계란", calories: 75, protein: 6, fat: 5, carbs: 1 },
+    { name: "바나나", calories: 89, protein: 1.1, fat: 0.3, carbs: 23 },
+    { name: "밥", calories: 130, protein: 2.7, fat: 0.3, carbs: 28 }
+];
 
 // 방문자 카운트
 async function incrementVisitCount() {
@@ -76,6 +82,39 @@ async function addComment() {
 
     isSubmitting = false; // 다시 댓글 입력 가능하게
 }
+// 자동 추천 함수
+document.getElementById("foodInput").addEventListener("input", function () {
+    const input = this.value.toLowerCase();
+    const suggestions = document.getElementById("suggestions");
+    suggestions.innerHTML = "";
+
+    if (input.length === 0) return;
+
+    const filtered = foodData.filter(food =>
+        food.name.includes(input)
+    );
+
+    filtered.forEach(food => {
+        const li = document.createElement("li");
+        li.textContent = food.name;
+        li.style.cursor = "pointer";
+        li.onclick = () => showFoodInfo(food);
+        suggestions.appendChild(li);
+    });
+});
+
+function showFoodInfo(food) {
+    const info = `
+    <h2>${food.name}</h2>
+    <p>칼로리: ${food.calories} kcal</p>
+    <p>단백질: ${food.protein}g</p>
+    <p>지방: ${food.fat}g</p>
+    <p>탄수화물: ${food.carbs}g</p>
+  `;
+    document.getElementById("selectedFoodInfo").innerHTML = info;
+    document.getElementById("suggestions").innerHTML = "";
+}
+
 function toggleComments() {
     const list = document.getElementById("commentList");
     const btn = document.getElementById("toggleBtn");
