@@ -20,10 +20,10 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const foodData = [
-    { name: "닭가슴살", calories: 165, protein: 31, fat: 3.6, carbs: 0 },
-    { name: "계란", calories: 75, protein: 6, fat: 5, carbs: 1 },
-    { name: "바나나", calories: 89, protein: 1.1, fat: 0.3, carbs: 23 },
-    { name: "밥", calories: 130, protein: 2.7, fat: 0.3, carbs: 28 }
+    { name: "닭가슴살", calories: 165, protein: 31, fat: 3.6, carbs: 0, unit: "100g" },
+    { name: "계란", calories: 75, protein: 6, fat: 5, carbs: 1, unit: "1개" },
+    { name: "바나나", calories: 89, protein: 1.1, fat: 0.3, carbs: 23, unit: "1개" },
+    { name: "밥", calories: 130, protein: 2.7, fat: 0.3, carbs: 28, unit: "100g" }
 ];
 
 // 방문자 카운트
@@ -106,13 +106,46 @@ document.getElementById("foodInput").addEventListener("input", function () {
 function showFoodInfo(food) {
     const info = `
     <h2>${food.name}</h2>
-    <p>칼로리: ${food.calories} kcal</p>
+    <p>기준량: ${food.unit}</p>
+    <p>칼로리: ${food.calories} kcal / ${food.unit}</p>
     <p>단백질: ${food.protein}g</p>
     <p>지방: ${food.fat}g</p>
     <p>탄수화물: ${food.carbs}g</p>
+
+    <input type="number" id="amountInput" placeholder="섭취량 (${food.unit})" />
+    <button onclick='calculateNutrition(${JSON.stringify(JSON.stringify(food))})'>계산하기</button>
+
+    <div id="result" style="margin-top: 15px;"></div>
   `;
     document.getElementById("selectedFoodInfo").innerHTML = info;
-    document.getElementById("suggestions").innerHTML = "";
+}
+
+function calculateNutrition(foodJson) {
+    const food = JSON.parse(JSON.parse(foodJson));
+    const amount = parseFloat(document.getElementById("amountInput").value);
+
+    if (isNaN(amount) || amount <= 0) {
+        alert("섭취량을 정확히 입력해주세요!");
+        return;
+    }
+
+    // 🔥 단위 기준에 따라 나누는 비율 설정
+    let factor = 1;
+    if (food.unit === "100g") {
+        factor = amount / 100;
+    } else if (food.unit === "1개") {
+        factor = amount; // 그대로 곱함
+    }
+
+    const resultHTML = `
+    <strong>총 섭취량 ${amount}${food.unit === "100g" ? "g" : "개"} 기준</strong>
+    <p>칼로리: ${(food.calories * factor).toFixed(1)} kcal</p>
+    <p>단백질: ${(food.protein * factor).toFixed(1)} g</p>
+    <p>지방: ${(food.fat * factor).toFixed(1)} g</p>
+    <p>탄수화물: ${(food.carbs * factor).toFixed(1)} g</p>
+  `;
+
+    document.getElementById("result").innerHTML = resultHTML;
 }
 
 function toggleComments() {
@@ -208,3 +241,4 @@ window.addComment = addComment;
 window.loadComments = loadComments;
 window.toggleDarkMode = toggleDarkMode;
 window.toggleComments = toggleComments;
+window.calculateNutrition = calculateNutrition;
