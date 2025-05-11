@@ -1,6 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
-import { getFirestore, collection, addDoc, getDocs, query, orderBy, deleteDoc, doc as firestoreDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import {
+    getFirestore, collection, addDoc, getDocs, query,
+    orderBy, deleteDoc, doc as firestoreDoc, updateDoc,
+    increment, getDoc
+} from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCnLZrxMK0P4uHZL8KxfsVAGKSKVscCKqo",
@@ -16,6 +20,26 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
+// 방문자 카운트
+async function incrementVisitCount() {
+    const countRef = firestoreDoc(db, "counters", "visits");
+
+    try {
+        await updateDoc(countRef, {
+            count: increment(1)
+        });
+
+        const snapshot = await getDoc(countRef);
+        const count = snapshot.data().count;
+
+        const el = document.getElementById("visitCount");
+        if (el) el.textContent = `👀 총 방문자 수: ${count}`;
+    } catch (err) {
+        console.error("방문자 수 업데이트 실패:", err);
+    }
+}
+
+// 댓글 좋아요 싫어요 기능
 async function updateLike(id, field) {
     const commentRef = firestoreDoc(db, "comments", id);
     await updateDoc(commentRef, {
@@ -116,6 +140,7 @@ async function loadComments() {
 }
 window.onload = () => {
     loadComments();
+    incrementVisitCount();
 };
 document.getElementById("commentInput").addEventListener("keyup", function (event) {
     if (event.key === "Enter") {
