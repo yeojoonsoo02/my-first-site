@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
-import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 
@@ -23,17 +23,26 @@ async function deleteComment(id) {
     loadComments(); // 삭제 후 목록 다시 로드
 }
 // 댓글 추가
+
+let isSubmitting = false; // 함수 바깥에 선언 (최초 한 번만)
+
 async function addComment() {
+    if (isSubmitting) return; // 이미 제출 중이면 무시
+    isSubmitting = true;
+
     const input = document.getElementById("commentInput");
     const comment = input.value.trim();
+
     if (comment) {
         await addDoc(collection(db, "comments"), {
             text: comment,
             createdAt: new Date()
         });
         input.value = "";
-        loadComments();
+        await loadComments(); // 댓글 다시 불러오기
     }
+
+    isSubmitting = false; // 다시 댓글 입력 가능하게
 }
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
@@ -50,7 +59,10 @@ async function loadComments() {
     const list = document.getElementById("commentList");
     list.innerHTML = "";
 
-    const querySnapshot = await getDocs(collection(db, "comments"));
+    // 🔽 createdAt 기준으로 최신순 정렬
+    const q = query(collection(db, "comments"), orderBy("createdAt", "desc"));
+    const querySnapshot = await getDocs(q);
+
     querySnapshot.forEach((doc) => {
         const data = doc.data();
         const li = document.createElement("li");
