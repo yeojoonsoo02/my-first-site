@@ -76,6 +76,18 @@ async function addComment() {
 
     isSubmitting = false; // 다시 댓글 입력 가능하게
 }
+function toggleComments() {
+    const list = document.getElementById("commentList");
+    const btn = document.getElementById("toggleBtn");
+
+    if (list.style.display === "none") {
+        list.style.display = "block";
+        btn.textContent = "댓글 숨기기";
+    } else {
+        list.style.display = "none";
+        btn.textContent = "댓글 보기";
+    }
+}
 function timeAgo(date) {
     const seconds = Math.floor((new Date() - date) / 1000);
     if (seconds < 60) return `${seconds}초 전`;
@@ -141,6 +153,7 @@ async function loadComments() {
 window.onload = () => {
     loadComments();
     incrementVisitCount();
+    document.getElementById("commentList").style.display = "none";
 };
 document.getElementById("commentInput").addEventListener("keyup", function (event) {
     if (event.key === "Enter") {
