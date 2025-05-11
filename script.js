@@ -84,7 +84,7 @@ async function addComment() {
             text: comment,
             createdAt: new Date(),
             likes: 0,
-            dislike: 0
+            dislikes: 0
         });
         input.value = "";
         await loadComments(); // 댓글 다시 불러오기
@@ -283,12 +283,6 @@ async function loadComments() {
     });
 }
 
-document.getElementById("commentInput").addEventListener("keyup", function (event) {
-    if (event.key === "Enter") {
-        addComment();
-    }
-});
-
 function toggleDarkMode() {
     document.body.classList.toggle('dark-mode');
 }
@@ -301,7 +295,9 @@ window.toggleComments = toggleComments;
 window.calculateNutrition = calculateNutrition;
 window.calculateTotal = calculateTotal;
 window.onload = () => {
-    loadComments();
+    if (document.getElementById("commentList")) {
+        loadComments();
+        document.getElementById("commentList").style.display = "none";
+    }
     incrementVisitCount();
-    document.getElementById("commentList").style.display = "none";
 };
