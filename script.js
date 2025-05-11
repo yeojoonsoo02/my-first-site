@@ -26,6 +26,14 @@ const foodData = [
     { name: "밥", calories: 130, protein: 2.7, fat: 0.3, carbs: 28, unit: "100g" }
 ];
 const selectedFoods = [];
+const commentInput = document.getElementById("commentInput");
+if (commentInput) {
+    commentInput.addEventListener("keyup", function (event) {
+        if (event.key === "Enter") {
+            addComment();
+        }
+    });
+}
 
 let isSubmitting = false; // 함수 바깥에 선언 (최초 한 번만)
 
