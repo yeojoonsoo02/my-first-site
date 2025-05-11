@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/fireba
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
 import { getFirestore, collection, addDoc, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 import { deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
+import { doc as firestoreDoc, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCnLZrxMK0P4uHZL8KxfsVAGKSKVscCKqo",
@@ -17,6 +17,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
+
+async function updateLike(id, field) {
+    const commentRef = firestoreDoc(db, "comments", id);
+    await updateDoc(commentRef, {
+        [field]: increment(1)
+    });
+    loadComments();
+}
 
 async function deleteComment(id) {
     await deleteDoc(firestoreDoc(db, "comments", id));
@@ -36,7 +44,9 @@ async function addComment() {
     if (comment) {
         await addDoc(collection(db, "comments"), {
             text: comment,
-            createdAt: new Date()
+            createdAt: new Date(),
+            likes: 0,
+            dislike: 0
         });
         input.value = "";
         await loadComments(); // 댓글 다시 불러오기
@@ -81,8 +91,26 @@ async function loadComments() {
             await deleteComment(doc.id);
         };
 
+        // 좋아요 버튼
+        const likeBtn = document.createElement("button");
+        likeBtn.textContent = `👍 ${data.likes ?? 0}`;
+        likeBtn.style.marginLeft = "10px";
+        likeBtn.onclick = async () => {
+            await updateLike(doc.id, "likes");
+        };
+
+        // 싫어요 버튼
+        const dislikeBtn = document.createElement("button");
+        dislikeBtn.textContent = `👎 ${data.dislikes ?? 0}`;
+        dislikeBtn.style.marginLeft = "5px";
+        dislikeBtn.onclick = async () => {
+            await updateLike(doc.id, "dislikes");
+        };
+
         li.appendChild(commentText);
-        li.appendChild(deleteBtn);
+        li.appendChild(likeBtn);
+        li.appendChild(dislikeBtn);
+        li.appendChild(deleteBtn); // 이미 있던 ❌ 버튼
         li.title = createdAt.toLocaleString();
 
         list.appendChild(li);
