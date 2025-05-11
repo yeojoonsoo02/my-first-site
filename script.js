@@ -1,6 +1,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-analytics.js";
 import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+import { deleteDoc, doc as firestoreDoc } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
+
 
 const firebaseConfig = {
     apiKey: "AIzaSyCnLZrxMK0P4uHZL8KxfsVAGKSKVscCKqo",
@@ -16,6 +18,10 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 
+async function deleteComment(id) {
+    await deleteDoc(firestoreDoc(db, "comments", id));
+    loadComments(); // 삭제 후 목록 다시 로드
+}
 // 댓글 추가
 async function addComment() {
     const input = document.getElementById("commentInput");
@@ -51,7 +57,20 @@ async function loadComments() {
 
         const createdAt = data.createdAt?.toDate ? data.createdAt.toDate() : new Date();
 
-        li.textContent = `${data.text} (${timeAgo(createdAt)})`;
+        // 댓글 텍스트와 시간
+        const commentText = document.createElement("span");
+        commentText.textContent = `${data.text} (${timeAgo(createdAt)})`;
+
+        // ❌ 삭제 버튼
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "❌";
+        deleteBtn.style.marginLeft = "10px";
+        deleteBtn.onclick = async () => {
+            await deleteComment(doc.id);
+        };
+
+        li.appendChild(commentText);
+        li.appendChild(deleteBtn);
         li.title = createdAt.toLocaleString();
 
         list.appendChild(li);
@@ -67,7 +86,7 @@ document.getElementById("commentInput").addEventListener("keyup", function (even
 });
 
 function toggleDarkMode() {
-  document.body.classList.toggle('dark-mode');
+    document.body.classList.toggle('dark-mode');
 }
 
 window.addComment = addComment;
